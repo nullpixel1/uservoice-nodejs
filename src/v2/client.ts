@@ -65,6 +65,26 @@ export class ClientV2 implements IClientV2 {
     });
   }
 
+  private postWithBody<T>(endpoint: string, body: string) {
+    // Very hacky, but very fast fix for a feature that should've always been added.
+    const options: request.CoreOptions = { 
+      method: 'POST',
+      body: body,
+      headers: { 'content-type': 'application/x-www-form-urlencoded' }
+   };
+
+   if (this.accessToken) {
+     options.headers['Authorization'] = `Bearer ${this.accessToken}`
+   }
+
+    return new Promise<T>((resolve, reject) => {
+      request(`${this.baseUrl}${endpoint}`, options, (error, response, body) => {
+        if (error) { return reject(error); }
+        resolve(this.parse(body));
+      });
+    });
+  }
+
   private loginWithBody(requestBody: string) {
     const options: request.CoreOptions = {
       body: requestBody,
